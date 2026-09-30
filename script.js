@@ -11,7 +11,35 @@ const plans=[
 let state=load();
 function fresh(){return{profile:{name:'',age:25,sex:'male',height:170,weight:70,activity:1.55,goal:'lose',steps:10000},days:{},settings:{notify:false}}}
 function load(){try{return JSON.parse(localStorage.getItem(KEY))||fresh()}catch(e){return fresh()}}function save(){localStorage.setItem(KEY,JSON.stringify(state))}
-function todayKey(){return new Date().toISOString().slice(0,10)}function dateObj(k){return new Date(k+'T00:00:00')}function iso(d){return d.toISOString().slice(0,10)}function challengeKey(i){return iso(new Date(dateObj(START).getTime()+(i-1)*86400000))}function dayIndex(k=todayKey()){return Math.floor((dateObj(k)-dateObj(START))/86400000)+1}function isDemo(k=todayKey()){return k===DEMO}function activeKey(){const k=todayKey();return k<START?DEMO:k>END?END:k}function currentDay(){return Math.max(1,Math.min(TOTAL,dayIndex(activeKey())))}
+
+function iso(d){
+  const y=d.getFullYear();
+  const m=String(d.getMonth()+1).padStart(2,'0');
+  const day=String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+}
+
+function todayKey(){
+  return iso(new Date());
+}
+
+function dateObj(k){
+  const [y,m,d]=k.split('-').map(Number);
+  return new Date(y,m-1,d);
+}
+
+function challengeKey(i){
+  const d=dateObj(START);
+  d.setDate(d.getDate()+(i-1));
+  return iso(d);
+}
+
+function dayIndex(k=todayKey()){
+  const start=Date.UTC(2026,9,1);
+  const [y,m,d]=k.split('-').map(Number);
+  return Math.floor((Date.UTC(y,m-1,d)-start)/86400000)+1;
+}
+
 function rec(k=activeKey()){if(!state.days[k])state.days[k]={habits:{},steps:0,stepLog:[],water:0,waterLog:[],workout:{warm:{},main:{},cool:{},complete:false},nutrition:{},learn:{},sleep:null};return state.days[k]}
 function clamp(n,a,b){return Math.max(a,Math.min(b,n))}function fmt(n){return Number(n||0).toLocaleString('en-IN')}function toast(t){const e=document.getElementById('toast');e.textContent=t;e.classList.add('show');clearTimeout(window.__t);window.__t=setTimeout(()=>e.classList.remove('show'),2200)}
 function statusFor(id,k=activeKey()){const r=rec(k),v=r.habits[id];if(v==='done')return'done';if(v==='missed')return'missed';if(id==='steps'&&r.steps>=state.profile.steps)return'done';if(id==='water'&&r.water>=WATER)return'done';if(id==='workout'&&r.workout.complete)return'done';if(id==='learn'&&r.learn.text)return'done';if(id==='sleep'&&r.sleep!=null&&r.sleep>=7&&r.sleep<=8)return'done';return'pending'}
