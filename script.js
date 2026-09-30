@@ -95,26 +95,8 @@ saveNutrition.onclick=()=>{
 
   toast(`Nutrition saved • ${fmt(cal)} kcal • ${protein}g protein`);
 };
-saveLearn.onclick=()=>{
-  const r=rec();
-  const text=learnText.value.trim();
-  const key=learnKey.value.trim();
 
-  if(!text) return toast('Enter what you learned');
-  if(!key) return toast('Enter your key takeaway');
 
-  r.learn={
-    text:text,
-    key:key,
-    saved:true
-  };
-
-  r.habits.learn='done';
-
-  save();
-  renderAll();
-  toast('Learning saved ✓');
-};
 saveSettings.onclick=()=>{const p=state.profile;p.name=nameIn.value.trim();p.age=Number(ageIn.value)||25;p.sex=sexIn.value;p.height=Number(heightIn.value)||170;p.weight=Number(weightIn.value)||70;p.activity=Number(activityIn.value)||1.55;p.goal=goalIn.value;p.steps=Number(stepIn.value)||10000;save();renderAll();toast('Profile saved')};notifyBtn.onclick=enableNotifications;
 exportBtn.onclick=()=>{const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='winter-arc-backup.json';a.click();URL.revokeObjectURL(a.href)};importIn.onchange=async e=>{try{const x=JSON.parse(await e.target.files[0].text());if(!x.profile||!x.days)throw 0;state=x;state.profile.water=undefined;save();renderAll();toast('Backup restored')}catch(_){toast('Invalid backup file')}};
 resetBtn.onclick=()=>{if(confirm('Reset all Winter ARC data?')){localStorage.removeItem(KEY);state=fresh();save();renderAll();toast('Challenge reset')}};
