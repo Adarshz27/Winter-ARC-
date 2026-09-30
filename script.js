@@ -42,7 +42,32 @@ async function enableNotifications(){if(!('Notification'in window))return toast(
 document.addEventListener('click',e=>{const b=e.target.closest('[data-screen]');if(b)showScreen(b.dataset.screen)});settingsBtn.onclick=()=>showScreen('settings');alarmBtn.onclick=()=>{beep();toast('Alarm sound test')};modalClose.onclick=closeModal;modal.onclick=e=>{if(e.target.id==='modal')closeModal()};focusBtn.onclick=()=>document.querySelector('.habit button')?.scrollIntoView({behavior:'smooth'});
 saveSteps.onclick=()=>{const add=Math.max(0,Number(stepsInput.value)||0);if(!add)return toast('Enter steps to add');const r=rec();r.steps=(r.steps||0)+add;r.stepLog.push({amount:add,time:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})});r.habits.steps=r.steps>=state.profile.steps?'done':'pending';save();renderAll();toast(`${fmt(add)} steps added`)};
 document.querySelectorAll('[data-water]').forEach(b=>b.onclick=()=>{const amount=Number(b.dataset.water),r=rec();r.water=Math.max(0,(r.water||0)+amount);r.waterLog.push({amount,time:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})});r.habits.water=r.water>=WATER?'done':'pending';save();renderAll();toast('Water updated')});
-saveNutrition.onclick=()=>{const r=rec();r.nutrition={cal:Number(calIn.value)||0,protein:Number(proteinIn.value)||0};save();toast('Nutrition saved')};saveLearn.onclick=()=>{const r=rec();r.learn={text:learnText.value.trim(),key:learnKey.value.trim(),saved:true};r.habits.learn=r.learn.text?'done':'pending';save();renderAll();toast('Learning saved')};
+
+
+saveNutrition.onclick=()=>{
+  const r=rec();
+  const cal=Number(calIn.value);
+  const protein=Number(proteinIn.value);
+
+  if(!Number.isFinite(cal)||cal<=0)
+    return toast('Enter calories eaten');
+
+  if(!Number.isFinite(protein)||protein<=0)
+    return toast('Enter protein intake');
+
+  r.nutrition={
+    cal:cal,
+    protein:protein
+  };
+
+  r.habits.diet='done';
+
+  save();
+  renderAll();
+
+  toast(`Nutrition saved • ${fmt(cal)} kcal • ${protein}g protein`);
+};
+
 saveSettings.onclick=()=>{const p=state.profile;p.name=nameIn.value.trim();p.age=Number(ageIn.value)||25;p.sex=sexIn.value;p.height=Number(heightIn.value)||170;p.weight=Number(weightIn.value)||70;p.activity=Number(activityIn.value)||1.55;p.goal=goalIn.value;p.steps=Number(stepIn.value)||10000;save();renderAll();toast('Profile saved')};notifyBtn.onclick=enableNotifications;
 exportBtn.onclick=()=>{const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='winter-arc-backup.json';a.click();URL.revokeObjectURL(a.href)};importIn.onchange=async e=>{try{const x=JSON.parse(await e.target.files[0].text());if(!x.profile||!x.days)throw 0;state=x;state.profile.water=undefined;save();renderAll();toast('Backup restored')}catch(_){toast('Invalid backup file')}};
 resetBtn.onclick=()=>{if(confirm('Reset all Winter ARC data?')){localStorage.removeItem(KEY);state=fresh();save();renderAll();toast('Challenge reset')}};
